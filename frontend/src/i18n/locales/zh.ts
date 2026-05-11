@@ -698,14 +698,16 @@ export default {
         note: '请确保配置目录存在。macOS/Linux 用户可运行 mkdir -p ~/.codex 创建目录。',
         noteWindows:
           '按 Win+R，输入 %userprofile%\\.codex 打开配置目录。如目录不存在，请先手动创建。',
-        wsNote:
-          'WebSocket 是可选模式，不是默认推荐。账号池中途触发限额时可能受 previous_response_id 账号绑定影响；稳定优先请使用普通 Codex CLI 配置。'
+        recordNote:
+          '保留记录模式使用内置 openai provider，Codex CLI 0.130+ 实测会走 WebSocket；优点是不会切换 provider 导致本地会话记录消失。',
+        httpNote:
+          'HTTP/SSE 模式使用自定义 OpenAI provider 和 wire_api=responses；它不会走 WebSocket，但 Codex 会把它视为另一个 provider，旧记录需要本地迁移或复制后才会显示。'
       },
       cliTabs: {
         claudeCode: 'Claude Code',
         geminiCli: 'Gemini CLI',
-        codexCli: 'Codex CLI',
-        codexCliWs: 'Codex CLI (WebSocket)',
+        codexCli: 'Codex CLI（保留记录）',
+        codexCliHttp: 'Codex CLI（HTTP/SSE）',
         opencode: 'OpenCode'
       },
       antigravity: {

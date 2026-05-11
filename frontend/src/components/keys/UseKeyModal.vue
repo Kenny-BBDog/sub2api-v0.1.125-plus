@@ -269,7 +269,7 @@ const clientTabs = computed((): TabConfig[] => {
     case 'openai': {
       const tabs: TabConfig[] = [
         { id: 'codex', label: t('keys.useKeyModal.cliTabs.codexCli'), icon: TerminalIcon },
-        { id: 'codex-ws', label: t('keys.useKeyModal.cliTabs.codexCliWs'), icon: TerminalIcon },
+        { id: 'codex-http', label: t('keys.useKeyModal.cliTabs.codexCliHttp'), icon: TerminalIcon },
       ]
       if (props.allowMessagesDispatch) {
         tabs.push({ id: 'claude', label: t('keys.useKeyModal.cliTabs.claudeCode'), icon: TerminalIcon })
@@ -313,7 +313,7 @@ const showShellTabs = computed(() => activeClientTab.value !== 'opencode')
 
 const currentTabs = computed(() => {
   if (!showShellTabs.value) return []
-  if (activeClientTab.value === 'codex' || activeClientTab.value === 'codex-ws') {
+  if (activeClientTab.value === 'codex' || activeClientTab.value === 'codex-http') {
     return openaiTabs
   }
   return shellTabs
@@ -341,12 +341,10 @@ const platformNote = computed(() => {
       if (activeClientTab.value === 'claude') {
         return t('keys.useKeyModal.note')
       }
-      if (activeClientTab.value === 'codex-ws') {
-        return t('keys.useKeyModal.openai.wsNote')
+      if (activeClientTab.value === 'codex-http') {
+        return t('keys.useKeyModal.openai.httpNote')
       }
-      return activeTab.value === 'windows'
-        ? t('keys.useKeyModal.openai.noteWindows')
-        : t('keys.useKeyModal.openai.note')
+      return t('keys.useKeyModal.openai.recordNote')
     case 'gemini':
       return t('keys.useKeyModal.gemini.note')
     case 'antigravity':
@@ -420,8 +418,8 @@ const currentFiles = computed((): FileConfig[] => {
       if (activeClientTab.value === 'claude') {
         return generateAnthropicFiles(baseUrl, apiKey)
       }
-      if (activeClientTab.value === 'codex-ws') {
-        return generateOpenAIWsFiles(apiBase, apiKey)
+      if (activeClientTab.value === 'codex-http') {
+        return generateOpenAIHTTPFiles(baseRoot, apiKey)
       }
       return generateOpenAIFiles(apiBase, apiKey)
     case 'gemini':
@@ -552,23 +550,25 @@ openai_api_key = "${apiKey}"`
   ]
 }
 
-function generateOpenAIWsFiles(baseUrl: string, apiKey: string): FileConfig[] {
+function generateOpenAIHTTPFiles(baseUrl: string, apiKey: string): FileConfig[] {
   const isWindows = activeTab.value === 'windows'
   const configDir = isWindows ? '%userprofile%\\.codex' : '~/.codex'
 
-  // Keep Codex on the built-in OpenAI provider so existing Codex sessions remain visible.
-  const configContent = `model_provider = "openai"
+  const configContent = `model_provider = "OpenAI"
 model = "gpt-5.4"
+review_model = "gpt-5.4"
 model_reasoning_effort = "medium"
 network_access = "enabled"
 windows_wsl_setup_acknowledged = true
 model_context_window = 500000
 
-openai_base_url = "${baseUrl}"
 openai_api_key = "${apiKey}"
 
-[features]
-responses_websockets_v2 = true`
+[model_providers.OpenAI]
+name = "OpenAI"
+base_url = "${baseUrl}"
+wire_api = "responses"
+requires_openai_auth = true`
 
   return [
     {

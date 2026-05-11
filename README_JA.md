@@ -8,15 +8,17 @@ Sub2API v0.1.125 をベースにした個人向け改造 fork です。主な目
 
 ## 主な変更点
 
-- Codex CLI の標準 `model_provider = "openai"` 設定への互換性改善。
+- Codex CLI の組み込み `model_provider = "openai"` 設定への互換性改善。この設定はローカルの会話履歴を維持します。
 - OpenAI Responses / WebSocket 転送の安定性改善。
-- 長時間ストリーミングや複数 Codex CLI 端末向けの WebSocket ctx pool キュー処理。
+- Codex CLI 0.130+ の組み込み OpenAI トラフィック向け WebSocket ctx pool キュー処理。
 - OpenAI OAuth refresh token の再利用・失敗アカウントに対する安全な扱い。
 - 問題のあるアカウントを繰り返し自動更新せず、DB 内でアーカイブする運用。
 - 管理画面の利用記録、リクエスト種別、時区関連の修正。
 - Google OAuth Client ID/Secret は公開ソースから除去し、環境変数で注入する方式に変更。
 
 ## 推奨 Codex CLI 設定
+
+既存の Codex ローカルセッションを維持したい場合は、組み込み `openai` provider を使います。Codex CLI 0.130+ ではこの経路は WebSocket を使用します。
 
 ```toml
 model_provider = "openai"
@@ -30,11 +32,31 @@ openai_base_url = "https://your-domain.example/v1"
 openai_api_key = "sk-your-api-key"
 ```
 
-通常は以下を有効にする必要はありません。
+Codex CLI 0.130+ では `responses_websockets_v2` は removed feature であり、実測では通信方式の選択に影響しません。
 
 ```toml
 [features]
 responses_websockets_v2 = true
+```
+
+HTTP/SSE が必要な場合は custom provider を使います。ただし Codex は別 provider として扱うため、既存履歴を表示するにはローカル移行またはコピーが必要です。
+
+```toml
+model_provider = "OpenAI"
+model = "gpt-5.4"
+review_model = "gpt-5.4"
+model_reasoning_effort = "medium"
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+model_context_window = 500000
+
+openai_api_key = "sk-your-api-key"
+
+[model_providers.OpenAI]
+name = "OpenAI"
+base_url = "https://your-domain.example"
+wire_api = "responses"
+requires_openai_auth = true
 ```
 
 ## ビルド

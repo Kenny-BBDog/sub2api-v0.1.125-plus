@@ -6,17 +6,17 @@
 
 ## 这个版本改了什么
 
-- **Codex CLI OpenAI provider 兼容**：面向 Codex CLI 的 `openai` provider 配置做了兼容，避免必须伪装成自定义 `OpenAI` provider 才能走 Responses API。
+- **Codex CLI OpenAI provider 兼容**：支持 Codex CLI 内置 `openai` provider，以保留本地会话记录；同时保留自定义 `OpenAI` provider 的 HTTP/SSE 配置用于不想走 WebSocket 的场景。
 - **Responses / WebSocket 路由增强**：补强 OpenAI Responses、WebSocket 转发、完成事件、断联处理和长流式请求稳定性。
-- **可选 WS 并发槽优化**：为 WebSocket ctx pool 增加等待队列和更稳的连接生命周期处理；这是可选模式，不作为默认推荐。
+- **WS 并发槽优化**：为 Codex CLI 0.130+ 默认使用的 WebSocket ctx pool 增加等待队列和更稳的连接生命周期处理。
 - **OpenAI OAuth 账号刷新保护**：对已知坏账号/刷新失败账号做归档和暂停刷新，减少 `refresh_token_reused` 这类噪音反复刷屏，避免多个刷新路径竞态销号。
-- **账号池运行方式更稳**：默认推荐普通 Codex CLI HTTP/SSE 流式配置；WebSocket 仅作为需要低延迟长连接时的可选配置。
+- **账号池运行方式更稳**：内置 `openai` provider 优先保留记录但会走 WebSocket；HTTP/SSE 需要使用自定义 provider，并自行迁移本地历史记录。
 - **管理后台和使用记录修补**：修复部分使用记录、请求类型、流式统计、后台展示和时区相关问题。
 - **公开仓库安全处理**：移除了内置 Google OAuth Client ID/Secret，改为运行时通过环境变量或后台配置注入。
 
 ## 推荐的 Codex CLI 配置
 
-这个 fork 重点验证的是 Codex CLI 使用标准 `openai` provider 写法：
+如果核心需求是保留 Codex CLI 本地会话记录，使用标准 `openai` provider 写法。Codex CLI 0.130+ 实测该路径会发起 WebSocket 入站请求：
 
 ```toml
 model_provider = "openai"
@@ -30,11 +30,31 @@ openai_base_url = "https://your-domain.example/v1"
 openai_api_key = "sk-your-api-key"
 ```
 
-正常情况下不需要额外开启：
+`[features] responses_websockets_v2 = true` 在 Codex CLI 0.130+ 中已经是 removed feature，实测不会决定是否走 WebSocket：
 
 ```toml
 [features]
 responses_websockets_v2 = true
+```
+
+如果你必须使用 HTTP/SSE 流式，使用自定义 provider。代价是 Codex 会把它视为另一个 provider，本地旧记录需要迁移或复制后才会显示：
+
+```toml
+model_provider = "OpenAI"
+model = "gpt-5.4"
+review_model = "gpt-5.4"
+model_reasoning_effort = "medium"
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+model_context_window = 500000
+
+openai_api_key = "sk-your-api-key"
+
+[model_providers.OpenAI]
+name = "OpenAI"
+base_url = "https://your-domain.example"
+wire_api = "responses"
+requires_openai_auth = true
 ```
 
 如果你自己改了 Codex CLI 版本、代理链、Nginx 或账号池策略，仍然建议先做长流式请求和多终端并发测试。

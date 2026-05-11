@@ -8,15 +8,17 @@ This repository contains source code only. It does not include production databa
 
 ## What Is Different
 
-- Codex CLI compatibility for the standard `model_provider = "openai"` configuration.
+- Codex CLI compatibility for the built-in `model_provider = "openai"` configuration, which preserves local session history.
 - More robust OpenAI Responses and WebSocket forwarding behavior.
-- WebSocket ctx pool queueing and lifecycle fixes for long-running streamed tasks.
+- WebSocket ctx pool queueing and lifecycle fixes for Codex CLI 0.130+ built-in OpenAI traffic.
 - Safer OpenAI OAuth refresh behavior for bad or already-reused refresh tokens.
 - Reduced noisy refresh retries by archiving bad accounts instead of repeatedly scheduling them.
 - Admin usage and request accounting fixes used by the modified deployment.
 - Embedded Google OAuth client IDs/secrets were removed from public source and must be provided at runtime.
 
 ## Recommended Codex CLI Config
+
+Use the built-in `openai` provider when preserving existing Codex local sessions is the priority. Codex CLI 0.130+ uses WebSocket for this path.
 
 ```toml
 model_provider = "openai"
@@ -30,11 +32,31 @@ openai_base_url = "https://your-domain.example/v1"
 openai_api_key = "sk-your-api-key"
 ```
 
-Normally you should not need:
+`responses_websockets_v2` is a removed feature flag in Codex CLI 0.130+ and did not affect transport selection in testing:
 
 ```toml
 [features]
 responses_websockets_v2 = true
+```
+
+Use a custom provider for HTTP/SSE. Codex treats this as a different provider, so existing sessions require local migration or copying before they appear:
+
+```toml
+model_provider = "OpenAI"
+model = "gpt-5.4"
+review_model = "gpt-5.4"
+model_reasoning_effort = "medium"
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+model_context_window = 500000
+
+openai_api_key = "sk-your-api-key"
+
+[model_providers.OpenAI]
+name = "OpenAI"
+base_url = "https://your-domain.example"
+wire_api = "responses"
+requires_openai_auth = true
 ```
 
 Validate your own deployment with long streaming requests and concurrent Codex CLI terminals before relying on it in production.
