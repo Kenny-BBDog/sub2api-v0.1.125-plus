@@ -8,10 +8,13 @@ import (
 
 // RegisterCommonRoutes 注册通用路由（健康检查、状态等）
 func RegisterCommonRoutes(r *gin.Engine) {
-	// 健康检查
-	r.GET("/health", func(c *gin.Context) {
+	healthHandler := func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
+	}
+
+	// 健康检查：/health 保持兼容，/healthz 专供守护脚本使用，避免误打业务 API 产生错误日志。
+	r.GET("/health", healthHandler)
+	r.GET("/healthz", healthHandler)
 
 	// Claude Code 遥测日志（忽略，直接返回200）
 	r.POST("/api/event_logging/batch", func(c *gin.Context) {

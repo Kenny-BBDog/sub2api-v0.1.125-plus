@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-LOG=/var/log/sub2api/health-guard.log
+LOG=${LOG:-/var/log/sub2api/health-guard.log}
 APP_PORT=${APP_PORT:-18084}
 PUBLIC_HOSTNAME=${PUBLIC_HOSTNAME:-}
 
@@ -43,6 +43,11 @@ if [ "$local_admin" != 200 ]; then
   restart_sub2api "local admin returned $local_admin"
 fi
 
+local_health=$(code_of "http://127.0.0.1:${APP_PORT}/healthz")
+if [ "$local_health" != 200 ]; then
+  restart_sub2api "local healthz returned $local_health"
+fi
+
 if ! systemctl is-active --quiet sub2api-egress-socks.service; then
   restart_egress "service inactive"
 fi
@@ -56,6 +61,7 @@ if ! systemctl is-active --quiet nginx; then
 fi
 
 edge_admin=skipped
+edge_health=skipped
 if [ -n "$PUBLIC_HOSTNAME" ]; then
   edge_admin=$(code_of --resolve "${PUBLIC_HOSTNAME}:443:127.0.0.1" "https://${PUBLIC_HOSTNAME}/admin/dashboard")
   if [ "$edge_admin" != 200 ]; then
@@ -65,6 +71,10 @@ if [ -n "$PUBLIC_HOSTNAME" ]; then
       restart_sub2api "edge admin still $edge_admin_after after nginx recover"
     fi
   fi
+  edge_health=$(code_of --resolve "${PUBLIC_HOSTNAME}:443:127.0.0.1" "https://${PUBLIC_HOSTNAME}/healthz")
+  if [ "$edge_health" != 200 ]; then
+    restart_nginx "edge healthz returned $edge_health"
+  fi
 fi
 
-log "ok local_admin=$local_admin edge_admin=$edge_admin"
+log "ok local_admin=$local_admin local_health=$local_health edge_admin=$edge_admin edge_health=$edge_health"

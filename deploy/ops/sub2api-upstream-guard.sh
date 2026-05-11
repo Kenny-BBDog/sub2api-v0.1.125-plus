@@ -21,7 +21,7 @@ PY
 
 check_target() {
   port=$1
-  curl -k -sS --connect-timeout 3 --max-time 8 -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/health" 2>/dev/null | grep -qx '200'
+  curl -k -sS --connect-timeout 3 --max-time 8 -o /dev/null -w '%{http_code}' "http://127.0.0.1:${port}/healthz" 2>/dev/null | grep -qx '200'
 }
 
 if [ "$current_port" != "$APP_PORT" ]; then
