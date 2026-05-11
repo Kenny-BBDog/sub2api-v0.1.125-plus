@@ -1424,7 +1424,7 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 		return
 	}
 	defer func() {
-		_ = wsConn.CloseNow()
+		_ = wsConn.Close(coderws.StatusNormalClosure, "")
 	}()
 	wsConn.SetReadLimit(16 * 1024 * 1024)
 
@@ -2110,7 +2110,6 @@ func closeOpenAIClientWS(conn *coderws.Conn, status coderws.StatusCode, reason s
 		reason = reason[:120]
 	}
 	_ = conn.Close(status, reason)
-	_ = conn.CloseNow()
 }
 
 func writeOpenAIWSTerminalFailure(ctx context.Context, conn *coderws.Conn, model string, code string, message string) {
