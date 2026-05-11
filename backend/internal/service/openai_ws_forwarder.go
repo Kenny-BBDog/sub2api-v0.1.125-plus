@@ -2988,7 +2988,7 @@ func (s *OpenAIGatewayService) ProxyResponsesWebSocketFromClient(
 						false,
 					)
 				}
-				if fallbackReason == "upstream_rate_limited" && account.IsOpenAIOAuth() && turn == 1 && !wroteDownstream {
+				if fallbackReason == "upstream_rate_limited" && account.IsOpenAIOAuth() && !wroteDownstream {
 					lease.MarkBroken()
 					errMsg := strings.TrimSpace(errMsgRaw)
 					if errMsg == "" {

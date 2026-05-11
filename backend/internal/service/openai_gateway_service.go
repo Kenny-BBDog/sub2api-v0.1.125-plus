@@ -3783,40 +3783,6 @@ func writeOpenAIPassthroughResponseHeaders(dst http.Header, src http.Header, fil
 			dst.Set("Content-Type", v)
 		}
 	}
-	// 透传模式强制放行 x-codex-* 响应头（若上游返回）。
-	// 注意：真实 http.Response.Header 的 key 一般会被 canonicalize；但为了兼容测试/自建响应，
-	// 这里用 EqualFold 做一次大小写不敏感的查找。
-	getCaseInsensitiveValues := func(h http.Header, want string) []string {
-		if h == nil {
-			return nil
-		}
-		for k, vals := range h {
-			if strings.EqualFold(k, want) {
-				return vals
-			}
-		}
-		return nil
-	}
-
-	for _, rawKey := range []string{
-		"x-codex-primary-used-percent",
-		"x-codex-primary-reset-after-seconds",
-		"x-codex-primary-window-minutes",
-		"x-codex-secondary-used-percent",
-		"x-codex-secondary-reset-after-seconds",
-		"x-codex-secondary-window-minutes",
-		"x-codex-primary-over-secondary-limit-percent",
-	} {
-		vals := getCaseInsensitiveValues(src, rawKey)
-		if len(vals) == 0 {
-			continue
-		}
-		key := http.CanonicalHeaderKey(rawKey)
-		dst.Del(key)
-		for _, v := range vals {
-			dst.Add(key, v)
-		}
-	}
 }
 
 func (s *OpenAIGatewayService) buildUpstreamRequest(ctx context.Context, c *gin.Context, account *Account, body []byte, token string, isStream bool, promptCacheKey string, isCodexCLI bool) (*http.Request, error) {
