@@ -698,14 +698,14 @@ export default {
         configTomlHint: 'Make sure the following content is at the beginning of the config.toml file',
         note: 'Make sure the config directory exists. macOS/Linux users can run mkdir -p ~/.codex to create it.',
         noteWindows: 'Press Win+R and enter %userprofile%\\.codex to open the config directory. Create it manually if it does not exist.',
-        recordNote: 'Record-preserving mode uses the built-in openai provider. Codex CLI 0.130+ uses WebSocket for this path, but existing local sessions remain visible because the provider identity does not change.',
-        httpNote: 'HTTP/SSE mode uses a custom OpenAI provider with wire_api=responses. It does not use WebSocket, but Codex treats it as a different provider, so old sessions require local migration or copying before they appear.',
+        recordNote: 'Keep-records/WS mode uses the built-in openai provider. Codex CLI 0.130+ uses WebSocket for this path; use it only when you do not want to migrate local sessions yet.',
+        httpNote: 'Recommended mode. HTTP/SSE uses a custom OpenAI provider with wire_api=responses and does not use WebSocket. Run the bundled Codex history migration tool if old sessions should appear.',
       },
       cliTabs: {
         claudeCode: 'Claude Code',
         geminiCli: 'Gemini CLI',
-        codexCli: 'Codex CLI (Keep Records)',
-        codexCliHttp: 'Codex CLI (HTTP/SSE)',
+        codexCli: 'Codex CLI (Keep Records/WS)',
+        codexCliHttp: 'Codex CLI (Recommended HTTP/SSE)',
         opencode: 'OpenCode',
       },
       antigravity: {

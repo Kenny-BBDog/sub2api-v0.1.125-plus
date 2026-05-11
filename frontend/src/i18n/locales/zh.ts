@@ -699,15 +699,15 @@ export default {
         noteWindows:
           '按 Win+R，输入 %userprofile%\\.codex 打开配置目录。如目录不存在，请先手动创建。',
         recordNote:
-          '保留记录模式使用内置 openai provider，Codex CLI 0.130+ 实测会走 WebSocket；优点是不会切换 provider 导致本地会话记录消失。',
+          '保留记录/WS 模式使用内置 openai provider，Codex CLI 0.130+ 实测会走 WebSocket；仅在你暂时不想迁移本地记录时使用。',
         httpNote:
-          'HTTP/SSE 模式使用自定义 OpenAI provider 和 wire_api=responses；它不会走 WebSocket，但 Codex 会把它视为另一个 provider，旧记录需要本地迁移或复制后才会显示。'
+          '推荐模式。HTTP/SSE 使用自定义 OpenAI provider 和 wire_api=responses，不走 WebSocket；如需显示旧记录，请运行随项目提供的 Codex 记录迁移工具。'
       },
       cliTabs: {
         claudeCode: 'Claude Code',
         geminiCli: 'Gemini CLI',
-        codexCli: 'Codex CLI（保留记录）',
-        codexCliHttp: 'Codex CLI（HTTP/SSE）',
+        codexCli: 'Codex CLI（保留记录/WS）',
+        codexCliHttp: 'Codex CLI（推荐 HTTP/SSE）',
         opencode: 'OpenCode'
       },
       antigravity: {

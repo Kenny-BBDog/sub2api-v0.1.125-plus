@@ -1,6 +1,6 @@
 # sub2api v0.1.125-plus
 
-Personal modified public fork of Sub2API v0.1.125, focused on OpenAI-compatible routing and Codex CLI stability.
+Personal modified public fork of Sub2API v0.1.125, focused on OpenAI-compatible routing and Codex CLI stability. The recommended Codex CLI path is HTTP/SSE; a local migration tool is included for users who need old built-in `openai` sessions to appear under the custom provider.
 
 This repository contains source code only. It does not include production databases, account pools, OAuth refresh tokens, API keys, proxy credentials, server passwords, `.env` files, generated binaries, or upload chunks.
 
@@ -8,38 +8,18 @@ This repository contains source code only. It does not include production databa
 
 ## What Is Different
 
-- Codex CLI compatibility for the built-in `model_provider = "openai"` configuration, which preserves local session history.
+- Recommended Codex CLI HTTP/SSE configuration using a custom `OpenAI` provider and `wire_api = "responses"`.
 - More robust OpenAI Responses and WebSocket forwarding behavior.
-- WebSocket ctx pool queueing and lifecycle fixes for Codex CLI 0.130+ built-in OpenAI traffic.
+- Optional WebSocket compatibility for Codex CLI 0.130+ built-in `openai` traffic.
 - Safer OpenAI OAuth refresh behavior for bad or already-reused refresh tokens.
 - Reduced noisy refresh retries by archiving bad accounts instead of repeatedly scheduling them.
 - Admin usage and request accounting fixes used by the modified deployment.
+- Local Codex history migration tool: `tools/codex-provider-migrate.py`.
 - Embedded Google OAuth client IDs/secrets were removed from public source and must be provided at runtime.
 
 ## Recommended Codex CLI Config
 
-Use the built-in `openai` provider when preserving existing Codex local sessions is the priority. Codex CLI 0.130+ uses WebSocket for this path.
-
-```toml
-model_provider = "openai"
-model = "gpt-5.4"
-model_reasoning_effort = "medium"
-network_access = "enabled"
-windows_wsl_setup_acknowledged = true
-model_context_window = 500000
-
-openai_base_url = "https://your-domain.example/v1"
-openai_api_key = "sk-your-api-key"
-```
-
-`responses_websockets_v2` is a removed feature flag in Codex CLI 0.130+ and did not affect transport selection in testing:
-
-```toml
-[features]
-responses_websockets_v2 = true
-```
-
-Use a custom provider for HTTP/SSE. Codex treats this as a different provider, so existing sessions require local migration or copying before they appear:
+Use HTTP/SSE by default:
 
 ```toml
 model_provider = "OpenAI"
@@ -57,6 +37,28 @@ name = "OpenAI"
 base_url = "https://your-domain.example"
 wire_api = "responses"
 requires_openai_auth = true
+```
+
+If old sessions disappear after switching from the built-in `openai` provider to the custom `OpenAI` provider, close Codex CLI and run:
+
+```bash
+python tools/codex-provider-migrate.py --apply --yes
+```
+
+The tool backs up the affected session files and `state_*.sqlite` first. It does not modify `auth.json`, `config.toml`, API keys, or login credentials. Omit `--apply` for a dry run.
+
+Use the built-in `openai` provider only when the user does not want to migrate local sessions yet. Codex CLI 0.130+ uses WebSocket for this path:
+
+```toml
+model_provider = "openai"
+model = "gpt-5.4"
+model_reasoning_effort = "medium"
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+model_context_window = 500000
+
+openai_base_url = "https://your-domain.example/v1"
+openai_api_key = "sk-your-api-key"
 ```
 
 Validate your own deployment with long streaming requests and concurrent Codex CLI terminals before relying on it in production.

@@ -180,7 +180,7 @@ const activeClientTab = ref<string>('claude')
 const defaultClientTab = computed(() => {
   switch (props.platform) {
     case 'openai':
-      return 'codex'
+      return 'codex-http'
     case 'gemini':
       return 'gemini'
     case 'antigravity':
@@ -268,8 +268,8 @@ const clientTabs = computed((): TabConfig[] => {
   switch (props.platform) {
     case 'openai': {
       const tabs: TabConfig[] = [
-        { id: 'codex', label: t('keys.useKeyModal.cliTabs.codexCli'), icon: TerminalIcon },
         { id: 'codex-http', label: t('keys.useKeyModal.cliTabs.codexCliHttp'), icon: TerminalIcon },
+        { id: 'codex', label: t('keys.useKeyModal.cliTabs.codexCli'), icon: TerminalIcon },
       ]
       if (props.allowMessagesDispatch) {
         tabs.push({ id: 'claude', label: t('keys.useKeyModal.cliTabs.claudeCode'), icon: TerminalIcon })

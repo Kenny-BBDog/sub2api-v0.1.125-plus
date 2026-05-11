@@ -1,43 +1,22 @@
 # sub2api v0.1.125-plus
 
-这是基于 Sub2API v0.1.125 的个人魔改公开版，主要目标是让 OpenAI / Codex CLI 场景更稳定，尤其是 `model_provider = "openai"` + `openai_base_url = ".../v1"` 这类客户端配置。
+这是基于 Sub2API v0.1.125 的个人魔改公开版，主要目标是让 OpenAI / Codex CLI 场景更稳定。当前默认主推 Codex CLI 的 HTTP/SSE 配置；如果用户需要保留官方 `openai` provider 下的本地历史记录，可使用随仓库提供的迁移工具。
 
 本仓库只发布源码和可复现的工程文件，不包含任何生产数据库、账号池、OAuth refresh token、API Key、代理密码、服务器密码、`.env`、构建二进制或上传分片。
 
 ## 这个版本改了什么
 
-- **Codex CLI OpenAI provider 兼容**：支持 Codex CLI 内置 `openai` provider，以保留本地会话记录；同时保留自定义 `OpenAI` provider 的 HTTP/SSE 配置用于不想走 WebSocket 的场景。
+- **Codex CLI HTTP/SSE 主推配置**：默认推荐自定义 `OpenAI` provider + `wire_api = "responses"`，避免 Codex CLI 0.130+ 内置 `openai` provider 默认走 WebSocket。
 - **Responses / WebSocket 路由增强**：补强 OpenAI Responses、WebSocket 转发、完成事件、断联处理和长流式请求稳定性。
-- **WS 并发槽优化**：为 Codex CLI 0.130+ 默认使用的 WebSocket ctx pool 增加等待队列和更稳的连接生命周期处理。
+- **可选 WS 兼容**：仍支持内置 `openai` provider 的 WebSocket 路径，用于暂时不迁移本地记录的用户。
 - **OpenAI OAuth 账号刷新保护**：对已知坏账号/刷新失败账号做归档和暂停刷新，减少 `refresh_token_reused` 这类噪音反复刷屏，避免多个刷新路径竞态销号。
-- **账号池运行方式更稳**：内置 `openai` provider 优先保留记录但会走 WebSocket；HTTP/SSE 需要使用自定义 provider，并自行迁移本地历史记录。
+- **Codex 记录迁移工具**：提供 `tools/codex-provider-migrate.py`，用于把本地历史从 `openai` provider 迁移到自定义 `OpenAI` provider。
 - **管理后台和使用记录修补**：修复部分使用记录、请求类型、流式统计、后台展示和时区相关问题。
 - **公开仓库安全处理**：移除了内置 Google OAuth Client ID/Secret，改为运行时通过环境变量或后台配置注入。
 
 ## 推荐的 Codex CLI 配置
 
-如果核心需求是保留 Codex CLI 本地会话记录，使用标准 `openai` provider 写法。Codex CLI 0.130+ 实测该路径会发起 WebSocket 入站请求：
-
-```toml
-model_provider = "openai"
-model = "gpt-5.4"
-model_reasoning_effort = "medium"
-network_access = "enabled"
-windows_wsl_setup_acknowledged = true
-model_context_window = 500000
-
-openai_base_url = "https://your-domain.example/v1"
-openai_api_key = "sk-your-api-key"
-```
-
-`[features] responses_websockets_v2 = true` 在 Codex CLI 0.130+ 中已经是 removed feature，实测不会决定是否走 WebSocket：
-
-```toml
-[features]
-responses_websockets_v2 = true
-```
-
-如果你必须使用 HTTP/SSE 流式，使用自定义 provider。代价是 Codex 会把它视为另一个 provider，本地旧记录需要迁移或复制后才会显示：
+推荐使用 HTTP/SSE 流式，配置如下：
 
 ```toml
 model_provider = "OpenAI"
@@ -55,6 +34,28 @@ name = "OpenAI"
 base_url = "https://your-domain.example"
 wire_api = "responses"
 requires_openai_auth = true
+```
+
+如果用户从官方 `openai` provider 切到自定义 `OpenAI` provider 后看不到旧记录，先让用户关闭 Codex CLI，然后在本机运行：
+
+```bash
+python tools/codex-provider-migrate.py --apply --yes
+```
+
+脚本默认会先备份 `.codex` 内相关 session 和 `state_*.sqlite`，不会修改 `auth.json`、`config.toml`、API Key 或登录凭据。只想预览时不加 `--apply`。
+
+如果用户暂时不想迁移本地记录，可以使用内置 `openai` provider；Codex CLI 0.130+ 实测该路径会走 WebSocket：
+
+```toml
+model_provider = "openai"
+model = "gpt-5.4"
+model_reasoning_effort = "medium"
+network_access = "enabled"
+windows_wsl_setup_acknowledged = true
+model_context_window = 500000
+
+openai_base_url = "https://your-domain.example/v1"
+openai_api_key = "sk-your-api-key"
 ```
 
 如果你自己改了 Codex CLI 版本、代理链、Nginx 或账号池策略，仍然建议先做长流式请求和多终端并发测试。
