@@ -32,6 +32,10 @@ func TestRegisterAdminRoutesManagerAccessScope(t *testing.T) {
 		{name: "dashboard", path: "/api/v1/admin/dashboard/stats"},
 		{name: "ops", path: "/api/v1/admin/ops/dashboard/overview"},
 		{name: "redeem", path: "/api/v1/admin/redeem-codes"},
+		{name: "usage", path: "/api/v1/admin/usage"},
+		{name: "usage stats", path: "/api/v1/admin/usage/stats"},
+		{name: "usage user search", path: "/api/v1/admin/usage/search-users?q=test"},
+		{name: "usage api key search", path: "/api/v1/admin/usage/search-api-keys?q=test"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
@@ -46,6 +50,15 @@ func TestRegisterAdminRoutesManagerAccessScope(t *testing.T) {
 	t.Run("settings stays admin only", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/settings", nil)
+
+		router.ServeHTTP(w, req)
+
+		require.Equal(t, http.StatusForbidden, w.Code)
+	})
+
+	t.Run("usage cleanup stays admin only", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/usage/cleanup-tasks", nil)
 
 		router.ServeHTTP(w, req)
 

@@ -249,6 +249,7 @@ describe('路由守卫逻辑', () => {
       '/admin/redeem',
       '/admin/users',
       '/admin/subscriptions',
+      '/admin/usage',
     ])('访问授权后台页面 %s 允许通过', (path) => {
       const redirect = simulateGuard(path, { requiresAdmin: true, allowsManager: true }, authState)
       expect(redirect).toBeNull()
