@@ -698,6 +698,7 @@ export default {
         configTomlHint: 'Make sure the following content is at the beginning of the config.toml file',
         note: 'Make sure the config directory exists. macOS/Linux users can run mkdir -p ~/.codex to create it.',
         noteWindows: 'Press Win+R and enter %userprofile%\\.codex to open the config directory. Create it manually if it does not exist.',
+        wsNote: 'WebSocket is optional, not the default recommendation. If an account hits quota mid-session, previous_response_id is account-bound; prefer the normal Codex CLI config for stability.',
       },
       cliTabs: {
         claudeCode: 'Claude Code',

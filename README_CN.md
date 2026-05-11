@@ -8,9 +8,9 @@
 
 - **Codex CLI OpenAI provider 兼容**：面向 Codex CLI 的 `openai` provider 配置做了兼容，避免必须伪装成自定义 `OpenAI` provider 才能走 Responses API。
 - **Responses / WebSocket 路由增强**：补强 OpenAI Responses、WebSocket 转发、完成事件、断联处理和长流式请求稳定性。
-- **WS 并发槽优化**：为 WebSocket ctx pool 增加等待队列和更稳的连接生命周期处理，降低多终端、多 subagent 并发时的偶发断流。
+- **可选 WS 并发槽优化**：为 WebSocket ctx pool 增加等待队列和更稳的连接生命周期处理；这是可选模式，不作为默认推荐。
 - **OpenAI OAuth 账号刷新保护**：对已知坏账号/刷新失败账号做归档和暂停刷新，减少 `refresh_token_reused` 这类噪音反复刷屏，避免多个刷新路径竞态销号。
-- **账号池运行方式更稳**：默认面向 WS + ctx pool 的账号池使用方式，降低 Codex CLI 长任务过程中账号切换、流断开和连接关闭问题。
+- **账号池运行方式更稳**：默认推荐普通 Codex CLI HTTP/SSE 流式配置；WebSocket 仅作为需要低延迟长连接时的可选配置。
 - **管理后台和使用记录修补**：修复部分使用记录、请求类型、流式统计、后台展示和时区相关问题。
 - **公开仓库安全处理**：移除了内置 Google OAuth Client ID/Secret，改为运行时通过环境变量或后台配置注入。
 

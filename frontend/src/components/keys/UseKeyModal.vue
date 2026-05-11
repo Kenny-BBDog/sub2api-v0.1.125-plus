@@ -341,6 +341,9 @@ const platformNote = computed(() => {
       if (activeClientTab.value === 'claude') {
         return t('keys.useKeyModal.note')
       }
+      if (activeClientTab.value === 'codex-ws') {
+        return t('keys.useKeyModal.openai.wsNote')
+      }
       return activeTab.value === 'windows'
         ? t('keys.useKeyModal.openai.noteWindows')
         : t('keys.useKeyModal.openai.note')
