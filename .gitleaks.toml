@@ -1,0 +1,23 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "unit-test fixtures that intentionally exercise redaction, signing, OAuth beta headers, and payment key parsing"
+paths = [
+  '''backend/internal/.+_test\.go''',
+]
+
+[[allowlists]]
+description = "payment API documentation examples use placeholder idempotency keys and order notes"
+paths = [
+  '''docs/ADMIN_PAYMENT_INTEGRATION_API\.md''',
+]
+
+[[allowlists]]
+description = "ops preaggregation SQL column names are not secrets"
+paths = [
+  '''backend/internal/repository/ops_repo_preagg\.go''',
+]
+regexes = [
+  '''duration_p(50|90|95|99)_ms''',
+]
